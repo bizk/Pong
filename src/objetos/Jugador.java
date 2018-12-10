@@ -4,15 +4,17 @@ public class Jugador implements NpcTDA {
     private int puntaje;
     private int x;
     private int y;
+    private int velocidad;
 
     private int ancho = 10;
     private int alto = 120;
     private int spawnX;
 
-    public Jugador(int k, int j) {
+    public Jugador(int k, int j, int vel) {
         this.x = k;
         this.y = j;
-        this.spawnX = this.y;
+        this.velocidad = vel;
+        this.spawnX = this.x;
         this.puntaje = 0;
     }
 
@@ -29,6 +31,11 @@ public class Jugador implements NpcTDA {
     @Override
     public void moverse(int k) {
         this.y += k;
+    }
+
+    public void moverEnemigo(int destino) {
+        if (y > destino-velocidad && y >= 0) this.y -= velocidad;
+        else if(y < destino + velocidad && y < 600 - alto) this.y += velocidad;
     }
 
     public void darPuntos() {

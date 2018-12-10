@@ -14,9 +14,11 @@ public class Ventana extends JFrame {
     private Container c;
     private Vector<JLabel> paredes;
     private JPanel ventanaJuego;
+    private JPanel ventanaPausa;
     private JLabel puntajeJugador;
     private JLabel puntajeEnemigo;
     private JLabel jugador;
+    private JLabel enemigo;
     private JLabel pelota;
     private Timer timer;
 
@@ -31,7 +33,10 @@ public class Ventana extends JFrame {
         //
         construirMapa();
         jugar();
+        menuPause();
+
         c.add(ventanaJuego);
+        c.add(ventanaPausa);
         c.repaint();
     }
 
@@ -57,10 +62,7 @@ public class Ventana extends JFrame {
         ventanaJuego.add(jl);
         paredes.add(jl);
 
-
         ventanaJuego.setVisible(true);
-
-
         /*c.add(ventanaJuego);
         c.repaint();*/
     }
@@ -90,6 +92,11 @@ public class Ventana extends JFrame {
         jugador.setIcon(im);
         jugador.setVisible(true);
 
+        enemigo = new JLabel();
+        enemigo.setBounds(Juego.getInstancia().getEnemigo().getX(), Juego.getInstancia().getEnemigo().getY(), Juego.getInstancia().getEnemigo().getAncho(), Juego.getInstancia().getEnemigo().getAlto());
+        enemigo.setIcon(im);
+        enemigo.setVisible(true);
+
         pelota = new JLabel();
         pelota.setBounds(Juego.getInstancia().getPelota().getX(), Juego.getInstancia().getPelota().getY(), Juego.getInstancia().getPelota().getAncho(), Juego.getInstancia().getPelota().getAlto());
         pelota.setIcon(im);
@@ -97,9 +104,17 @@ public class Ventana extends JFrame {
 
         ventanaJuego.add(pelota);
         ventanaJuego.add(jugador);
+        ventanaJuego.add(enemigo);
         ventanaJuego.add(puntajeJugador);
         ventanaJuego.add(puntajeEnemigo);
         timer.start();
+    }
+
+    private void menuPause() {
+        ventanaPausa = new JPanel();
+        ventanaPausa.setBounds(150,150, 50 ,50);
+        ventanaPausa.setBackground(Color.green);
+        ventanaPausa.setVisible(false);
     }
 
     class Eventos implements ActionListener {
@@ -112,21 +127,31 @@ public class Ventana extends JFrame {
                     puntajeJugador.setText(Integer.toString(Juego.getInstancia().getJugador().getPuntaje()));
                     ventanaJuego.add(puntajeJugador);
                     c.repaint();
-                    System.out.println(Integer.toString(Juego.getInstancia().getJugador().getPuntaje()));
                 } else {
-                    System.out.println("BBBBBBBBBBBBBBBBBB");
-
+                    Juego.getInstancia().getEnemigo().darPuntos();
+                    ventanaJuego.remove(puntajeEnemigo);
+                    puntajeEnemigo.setText(Integer.toString(Juego.getInstancia().getEnemigo().getPuntaje()));
+                    ventanaJuego.add(puntajeEnemigo);
+                    c.repaint();
                 }
                 Juego.getInstancia().getPelota().spawn();
+                pelota.setBounds(Juego.getInstancia().getPelota().getX(), Juego.getInstancia().getPelota().getY(), Juego.getInstancia().getPelota().getAncho(), Juego.getInstancia().getPelota().getAlto());
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
             }
-            if (Juego.getInstancia().chocaConNPC(Juego.getInstancia().getJugador(), Juego.getInstancia().getPelota())) {
+            if (Juego.getInstancia().chocaConNPC(Juego.getInstancia().getJugador(), Juego.getInstancia().getPelota()) || Juego.getInstancia().chocaConNPC(Juego.getInstancia().getEnemigo(), Juego.getInstancia().getPelota())) {
                 Juego.getInstancia().getPelota().rebotar();
                 Juego.getInstancia().getPelota().generarDestino();
             }
-            if(!Juego.getInstancia().estaEnMarco(Juego.getInstancia().getPelota().getX(), Juego.getInstancia().getPelota().getY())) {
+            if(!Juego.getInstancia().estaEnMarco(Juego.getInstancia().getPelota().getX(), Juego.getInstancia().getPelota().getY(), Juego.getInstancia().getPelota().getAlto())) {
                 Juego.getInstancia().getPelota().generarDestino();
             }
             Juego.getInstancia().getPelota().mover();
+            Juego.getInstancia().moverEnemigo();
+            enemigo.setBounds(Juego.getInstancia().getEnemigo().getX(), Juego.getInstancia().getEnemigo().getY(), Juego.getInstancia().getEnemigo().getAncho(), Juego.getInstancia().getEnemigo().getAlto());
             jugador.setBounds(Juego.getInstancia().getJugador().getX(), Juego.getInstancia().getJugador().getY(), Juego.getInstancia().getJugador().getAncho(), Juego.getInstancia().getJugador().getAlto());
             pelota.setBounds(Juego.getInstancia().getPelota().getX(), Juego.getInstancia().getPelota().getY(), Juego.getInstancia().getPelota().getAncho(), Juego.getInstancia().getPelota().getAlto());
         }
@@ -143,8 +168,21 @@ public class Ventana extends JFrame {
             int tecla = e.getKeyCode();
             if (tecla == KeyEvent.VK_D) {
                 Juego.getInstancia().moverJugadorDer();
-            } else if (tecla == KeyEvent.VK_A) {
+            }
+            else if (tecla == KeyEvent.VK_A) {
                 Juego.getInstancia().moverJugadorIzq();
+            }
+            else if (tecla == KeyEvent.VK_ESCAPE) {
+                if (timer.isRunning()) {
+                    timer.stop();
+                    ventanaPausa.setVisible(true);
+                    c.repaint();
+                } else {
+                    timer.start();
+                    ventanaPausa.setVisible(false);
+                    ventanaJuego.repaint();
+                    c.repaint();
+                }
             }
         }
 

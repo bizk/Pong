@@ -5,13 +5,14 @@ import java.util.Random;
 public class Pelota {
     private int x, y, spawnX, spawnY;
     private int direcX, direcY;
-    private int ancho = 20, alto = 20;
+    private int ancho = 20, alto = 20, velocidad;
     private boolean derecha;
     private Random r;
 
-    public Pelota(int k, int j) {
+    public Pelota(int k, int j, int vel) {
         this.spawnX = k;
         this.spawnY = j;
+        this.velocidad = vel;
         this.r = new Random();
     }
 
@@ -37,18 +38,26 @@ public class Pelota {
         } else {
             this.direcX = 0;
         }
-        this.direcY = (int) (Math.random()*800-200);
+        do {
+            this.direcY = (int) (Math.random()*1000-200);
+        } while (direcY >= 0 && direcY <= 600);
     }
 
     public void mover() {
         if (derecha) {
-            this.x += 2;
-            if(this.y < direcY) this.y += 2;
-            else this.y -= 2;
+            this.x += 3;
+            if(this.y < direcY && y < 580-alto-velocidad) this.y += 3;
+            else if (this.y > direcY && this.y > 0)this.y -= 3;
+            else {
+                this.generarDestino();
+            }
         } else {
-            this.x-= 2;
-            if(this.y < direcY) this.y+=2;
-            else this.y-=2;
+            this.x-= 3;
+            if(this.y < direcY && y < 580-alto - velocidad) this.y+=3;
+            else if (this.y > direcY && this.y > 0) this.y-=3;
+            else {
+                this.generarDestino();
+            }
         }
     }
 
@@ -61,4 +70,7 @@ public class Pelota {
         return alto;
     }
     public boolean getDerecha() { return derecha; }
+    public int getDirecY() {
+        return direcY;
+    }
 }
